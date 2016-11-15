@@ -1,0 +1,38 @@
+{
+  "name": "screwdriver-build-bookend",
+  "version": "0.0.1",
+  "description": "creates setup and teardown steps for builds",
+  "main": "index.js",
+  "scripts": {
+    "pretest": "eslint .",
+    "test": "jenkins-mocha --recursive"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:screwdriver-cd/build-bookend.git"
+  },
+  "homepage": "https://github.com/screwdriver-cd/build-bookend",
+  "bugs": "https://github.com/screwdriver-cd/screwdriver/issues",
+  "keywords": [
+    "screwdriver",
+    "yahoo"
+  ],
+  "license": "BSD-3-Clause",
+  "author": "Peter Peterson <jedipetey@gmail.com>",
+  "contributors": [
+    "Dao Lam <daolam112@gmail.com>",
+    "Darren Matsumoto <aeneascorrupt@gmail.com>",
+    "Jeremiah Wuenschel <jeremiah.wuenschel@gmail.com>",
+    "Min Zhang <minzhang@andrew.cmu.edu>",
+    "Peter Peterson <jedipetey@gmail.com>",
+    "St. John Johnson <st.john.johnson@gmail.com",
+    "Tiffany Kyi <tiffanykyi@gmail.com>"
+  ],
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "^3.9.1",
+    "eslint-config-screwdriver": "^2.0.9",
+    "jenkins-mocha": "^3.0.0"
+  },
+  "dependencies": {}
+}
