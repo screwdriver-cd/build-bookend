@@ -46,11 +46,11 @@ const b = new Bookend(
     [ 'sd-sample', { name: 'my-bookend', config: { foo: 'bar' } }]
 );
 
-// Get the setup command { name: 'sd-setup', command: '...' }
-b.getSetupCommand().then((command) => { ... });
+// Get the setup command { name: 'sd-setup', command: '...' } given the models and configuration for the pipeline, job, and build
+b.getSetupCommand({ pipeline, job, build }).then((command) => { ... });
 
-// Get the teardown command { name: 'sd-teardown', command: '...' }
-b.getTeardownCommand().then((command) => { ... });
+// Get the teardown command { name: 'sd-teardown', command: '...' } given the models and configuration for the pipeline, job, and build
+b.getTeardownCommand({ pipeline, job, build }).then((command) => { ... });
 ```
 
 ## Testing

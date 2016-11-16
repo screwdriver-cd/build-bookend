@@ -75,6 +75,9 @@ class Bookend extends BookendInterface {
     /**
      * Constructs the list of modules used by bookends
      * @constructor
+     * @param {Object}  defaultModules      key->instantiated plugin for default plugins provided by screwdriver-cd
+     * @param {Array}   setup               List of module names, or objects { name, config } for instantiation to use in sd-setup
+     * @param {Array}   teardown            List of module names, or objects { name, config } for instantiation to use in sd-teardown
      */
     constructor(defaultModules, setup, teardown) {
         super();
@@ -85,10 +88,14 @@ class Bookend extends BookendInterface {
     /**
      * Gives the commands needed for setup before the build starts
      * @method getSetupCommand
+     * @param  {Object}         o           Information about the environment for setup
+     * @param  {PipelineModel}  o.pipeline  Pipeline model for the build
+     * @param  {JobModel}       o.job       Job model for the build
+     * @param  {Object}         o.build     Build configuration for the build (before creation)
      * @return {Promise}
      */
-    getSetupCommand() {
-        return Promise.all(this.setupList.map(m => m.getSetupCommand()))
+    getSetupCommand(o) {
+        return Promise.all(this.setupList.map(m => m.getSetupCommand(o)))
             .then(commands => ({
                 name: 'sd-setup',
                 command: commands.join(';')
@@ -98,10 +105,14 @@ class Bookend extends BookendInterface {
     /**
      * Gives the commands needed for teardown after the build completes
      * @method getTeardownCommand
+     * @param  {Object}         o           Information about the environment for setup
+     * @param  {PipelineModel}  o.pipeline  Pipeline model for the build
+     * @param  {JobModel}       o.job       Job model for the build
+     * @param  {Object}         o.build     Build configuration for the build (before creation)
      * @return {Promise}
      */
-    getTeardownCommand() {
-        return Promise.all(this.teardownList.map(m => m.getTeardownCommand()))
+    getTeardownCommand(o) {
+        return Promise.all(this.teardownList.map(m => m.getTeardownCommand(o)))
             .then(commands => ({
                 name: 'sd-teardown',
                 command: commands.join(';')
