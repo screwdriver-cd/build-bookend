@@ -9,6 +9,50 @@
 npm install screwdriver-build-bookend
 ```
 
+### Using the bookend interface
+Extend the bookend interface included in this module. You will need to define `getSetupCommand` and `getTeardownCommand` to return the commands needed to execute and return these in a promise.
+
+```js
+const { BookendInterface } = require('screwdriver-build-bookend');
+
+class MyBookend extends BookendInterface {
+    getSetupCommand() {
+        return Promise.resolve('echo "hello world"');
+    }
+    getTeardownCommand() {
+        return Promise.resolve('echo "goodbye world"');
+    }
+}
+
+module.exports = MyBookend;
+```
+
+### Getting final bookend commands
+Use the Bookend module to combine a set of BookendInterface based modules into single set of setup and teardown commands. See more examples in [the tests](https://github.com/screwdriver-cd/screwdriver-build-bookend/blob/master/test/index.test.js).
+
+```js
+const SampleBookend = require('sd-sample-bookend');
+const { Bookend } = require('screwdriver-build-bookend');
+const b = new Bookend(
+    // Provide a set of default instantiated plugins
+    { 'sd-sample': new SampleBookend() },
+    /*
+        Provide a list of plugins to use for setup, by name or with a config object
+        You can also choose to include your own modules with a config, these will be initialized for you with the given config.
+        The following config will use the default sample plugin, then the users my-bookend plugin
+     */ 
+    [ 'sd-sample', { name: 'my-bookend', config: { foo: 'bar' } }],
+    // Provide a list of plugins for teardown. format is the same as setup
+    [ 'sd-sample', { name: 'my-bookend', config: { foo: 'bar' } }]
+);
+
+// Get the setup command { name: 'sd-setup', command: '...' } given the models and configuration for the pipeline, job, and build
+b.getSetupCommand({ pipeline, job, build }).then((command) => { ... });
+
+// Get the teardown command { name: 'sd-teardown', command: '...' } given the models and configuration for the pipeline, job, and build
+b.getTeardownCommand({ pipeline, job, build }).then((command) => { ... });
+```
+
 ## Testing
 
 ```bash
@@ -25,7 +69,7 @@ Code licensed under the BSD 3-Clause license. See LICENSE file for terms.
 [license-image]: https://img.shields.io/npm/l/screwdriver-build-bookend.svg
 [issues-image]: https://img.shields.io/github/issues/screwdriver-cd/build-bookend.svg
 [issues-url]: https://github.com/screwdriver-cd/build-bookend/issues
-[status-image]: https://cd.screwdriver.cd/pipelines/pipelineid/badge
-[status-url]: https://cd.screwdriver.cd/pipelines/pipelineid
+[status-image]: https://cd.screwdriver.cd/pipelines/aeeba3ecbdf02ddaf2343f415d6b6afcfe27aab9/badge
+[status-url]: https://cd.screwdriver.cd/pipelines/aeeba3ecbdf02ddaf2343f415d6b6afcfe27aab9
 [daviddm-image]: https://david-dm.org/screwdriver-cd/build-bookend.svg?theme=shields.io
 [daviddm-url]: https://david-dm.org/screwdriver-cd/build-bookend
