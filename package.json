@@ -1,6 +1,6 @@
 {
   "name": "screwdriver-build-bookend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "creates setup and teardown steps for builds",
   "main": "index.js",
   "scripts": {

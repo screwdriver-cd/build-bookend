@@ -66,8 +66,8 @@ describe('bookend', () => {
     };
 
     const defaultModules = {
-        'sd-greeting': new SampleModule(),
-        'sd-planet': new SampleModule2()
+        greeting: new SampleModule(),
+        planet: new SampleModule2()
     };
 
     before(() => {
@@ -75,8 +75,8 @@ describe('bookend', () => {
     });
 
     beforeEach(() => {
-        mockery.registerAllowable('sd-notfound');
-        mockery.registerMock('sd-sample', class extends BookendInterface {
+        mockery.registerAllowable('notfound');
+        mockery.registerMock('sample', class extends BookendInterface {
             getSetupCommand() {
                 return 'echo "llama"';
             }
@@ -84,7 +84,7 @@ describe('bookend', () => {
                 return 'echo "penguin"';
             }
         });
-        mockery.registerMock('sd-sample2', SampleModule3);
+        mockery.registerMock('sample2', SampleModule3);
     });
 
     afterEach(() => {
@@ -104,88 +104,111 @@ describe('bookend', () => {
         });
 
         it('should fail if a module can not be found', () => {
-            assert.throws(() => new Bookend(defaultModules, ['sd-notfound'], []), Error,
-                'Could not initialize bookend plugin "sd-notfound": ' +
-                'Cannot find module \'sd-notfound\'');
+            assert.throws(() => new Bookend(defaultModules, ['notfound'], []), Error,
+                'Could not initialize bookend plugin "notfound": ' +
+                'Cannot find module \'notfound\'');
         });
 
         it('should fail if a module is not initialized properly', () => {
             assert.throws(() => new Bookend(defaultModules, [
-                { name: 'sd-sample2', config: { foo: 'foo' } }
+                { name: 'sample2', config: { foo: 'foo' } }
             ], []), Error,
-                'Could not initialize bookend plugin "sd-sample2": ' +
+                'Could not initialize bookend plugin "sample2": ' +
                 'expected \'foo\' to equal \'bar\'');
         });
     });
 
-    describe('getSetupCommand', () => {
+    describe('getSetupCommands', () => {
         it('should get a list of commands from default modules', () => {
-            const b = new Bookend(defaultModules, ['sd-greeting', 'sd-planet'], []);
+            const b = new Bookend(defaultModules, ['greeting', 'planet'], []);
 
-            b.getSetupCommand().then((command) => {
-                assert.deepEqual(command, {
-                    name: 'sd-setup',
-                    command: 'echo "hello";echo "world"'
-                });
+            return b.getSetupCommands().then((commands) => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'setup-greeting',
+                        command: 'echo "hello"'
+                    },
+                    {
+                        name: 'setup-planet',
+                        command: 'echo "world"'
+                    }
+                ]);
             });
         });
 
         it('should get a list of commands from default and user modules', () => {
-            const b = new Bookend(defaultModules, ['sd-greeting', 'sd-sample', 'sd-planet'], []);
+            const b = new Bookend(defaultModules, ['greeting', 'sample', 'planet'], []);
 
-            b.getSetupCommand().then((command) => {
-                assert.deepEqual(command, {
-                    name: 'sd-setup',
-                    command: 'echo "hello";echo "llama";echo "world"'
-                });
-            });
-        });
-
-        it('should get a list of commands from default and user modules', () => {
-            const b = new Bookend(defaultModules, ['sd-greeting', 'sd-sample', 'sd-planet'], []);
-
-            b.getSetupCommand().then((command) => {
-                assert.deepEqual(command, {
-                    name: 'sd-setup',
-                    command: 'echo "hello";echo "llama";echo "world"'
-                });
+            return b.getSetupCommands().then((commands) => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'setup-greeting',
+                        command: 'echo "hello"'
+                    },
+                    {
+                        name: 'setup-sample',
+                        command: 'echo "llama"'
+                    },
+                    {
+                        name: 'setup-planet',
+                        command: 'echo "world"'
+                    }
+                ]);
             });
         });
 
         it('should properly use user modules with a config', () => {
             const b = new Bookend(defaultModules, [
-                { name: 'sd-sample2', config: { foo: 'bar' } }
+                { name: 'sample2', config: { foo: 'bar' } }
             ], []);
 
-            b.getSetupCommand().then((command) => {
-                assert.deepEqual(command, {
-                    name: 'sd-setup',
-                    command: 'echo "bar"'
-                });
+            return b.getSetupCommands().then((commands) => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'setup-sample2',
+                        command: 'echo "bar"'
+                    }
+                ]);
             });
         });
     });
 
-    describe('getTeardownCommand', () => {
+    describe('getTeardownCommands', () => {
         it('should get a list of commands from default modules', () => {
-            const b = new Bookend(defaultModules, [], ['sd-greeting', 'sd-planet']);
+            const b = new Bookend(defaultModules, [], ['greeting', 'planet']);
 
-            b.getTeardownCommand().then((command) => {
-                assert.deepEqual(command, {
-                    name: 'sd-teardown',
-                    command: 'echo "goodbye";echo "mars"'
-                });
+            return b.getTeardownCommands().then((commands) => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'teardown-greeting',
+                        command: 'echo "goodbye"'
+                    },
+                    {
+                        name: 'teardown-planet',
+                        command: 'echo "mars"'
+                    }
+                ]);
             });
         });
 
         it('should get a list of commands from default and user modules', () => {
-            const b = new Bookend(defaultModules, [], ['sd-greeting', 'sd-sample', 'sd-planet']);
+            const b = new Bookend(defaultModules, [], ['greeting', 'sample', 'planet']);
 
-            b.getTeardownCommand().then((command) => {
-                assert.deepEqual(command, {
-                    name: 'sd-teardown',
-                    command: 'echo "goodbye";echo "penguin";echo "mars"'
-                });
+            return b.getTeardownCommands().then((commands) => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'teardown-greeting',
+                        command: 'echo "goodbye"'
+                    },
+                    {
+                        name: 'teardown-sample',
+                        command: 'echo "penguin"'
+                    },
+                    {
+                        name: 'teardown-planet',
+                        command: 'echo "mars"'
+                    }
+                ]);
             });
         });
     });
