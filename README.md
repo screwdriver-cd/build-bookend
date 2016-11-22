@@ -35,22 +35,22 @@ const SampleBookend = require('sd-sample-bookend');
 const { Bookend } = require('screwdriver-build-bookend');
 const b = new Bookend(
     // Provide a set of default instantiated plugins
-    { 'sd-sample': new SampleBookend() },
+    { 'sample': new SampleBookend() },
     /*
         Provide a list of plugins to use for setup, by name or with a config object
         You can also choose to include your own modules with a config, these will be initialized for you with the given config.
         The following config will use the default sample plugin, then the users my-bookend plugin
-     */ 
-    [ 'sd-sample', { name: 'my-bookend', config: { foo: 'bar' } }],
+     */
+    [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }],
     // Provide a list of plugins for teardown. format is the same as setup
-    [ 'sd-sample', { name: 'my-bookend', config: { foo: 'bar' } }]
+    [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }]
 );
 
-// Get the setup command { name: 'sd-setup', command: '...' } given the models and configuration for the pipeline, job, and build
-b.getSetupCommand({ pipeline, job, build }).then((command) => { ... });
+// Get the setup commands [ { name: 'setup-sample', command: '...' }, { name: 'setup-my-bookend', command: '...' } ] given the models and configuration for the pipeline, job, and build
+b.getSetupCommands({ pipeline, job, build }).then((commands) => { ... });
 
-// Get the teardown command { name: 'sd-teardown', command: '...' } given the models and configuration for the pipeline, job, and build
-b.getTeardownCommand({ pipeline, job, build }).then((command) => { ... });
+// Get the teardown command [ { name: 'teardown-sample', command: '...' }, { name: 'teardown-my-bookend', command: '...' } ] given the models and configuration for the pipeline, job, and build
+b.getTeardownCommands({ pipeline, job, build }).then((commands) => { ... });
 ```
 
 ## Testing

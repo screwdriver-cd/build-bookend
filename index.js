@@ -21,7 +21,10 @@ function loadModule(config) {
     try {
         const Obj = require(c.name);
 
-        return new Obj(c.config);
+        return {
+            obj: new Obj(c.config),
+            name: c.name
+        };
     } catch (e) {
         throw new Error(`Could not initialize bookend plugin "${c.name}": ${e.message}`);
     }
@@ -36,7 +39,10 @@ function loadModule(config) {
 function initializeBookend(defaultModules, list) {
     return list.map((m) => {
         if (typeof m === 'string' && defaultModules[m]) {
-            return defaultModules[m];
+            return {
+                obj: defaultModules[m],
+                name: m
+            };
         }
 
         return loadModule(m);
@@ -87,36 +93,34 @@ class Bookend extends BookendInterface {
 
     /**
      * Gives the commands needed for setup before the build starts
-     * @method getSetupCommand
+     * @method getSetupCommands
      * @param  {Object}         o           Information about the environment for setup
      * @param  {PipelineModel}  o.pipeline  Pipeline model for the build
      * @param  {JobModel}       o.job       Job model for the build
      * @param  {Object}         o.build     Build configuration for the build (before creation)
      * @return {Promise}
      */
-    getSetupCommand(o) {
-        return Promise.all(this.setupList.map(m => m.getSetupCommand(o)))
-            .then(commands => ({
-                name: 'sd-setup',
-                command: commands.join(';')
-            }));
+    getSetupCommands(o) {
+        return Promise.all(this.setupList.map(m => ({
+            name: `setup-${m.name}`,
+            command: m.obj.getSetupCommand(o)
+        })));
     }
 
     /**
      * Gives the commands needed for teardown after the build completes
-     * @method getTeardownCommand
+     * @method getTeardownCommands
      * @param  {Object}         o           Information about the environment for setup
      * @param  {PipelineModel}  o.pipeline  Pipeline model for the build
      * @param  {JobModel}       o.job       Job model for the build
      * @param  {Object}         o.build     Build configuration for the build (before creation)
      * @return {Promise}
      */
-    getTeardownCommand(o) {
-        return Promise.all(this.teardownList.map(m => m.getTeardownCommand(o)))
-            .then(commands => ({
-                name: 'sd-teardown',
-                command: commands.join(';')
-            }));
+    getTeardownCommands(o) {
+        return Promise.all(this.teardownList.map(m => ({
+            name: `teardown-${m.name}`,
+            command: m.obj.getTeardownCommand(o)
+        })));
     }
 }
 
