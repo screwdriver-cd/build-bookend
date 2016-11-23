@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.0.1
+
+Bug Fixes:
+  * Resolve promises before returning them.
+
 ## 2.0.0
 
 Breaking changes:

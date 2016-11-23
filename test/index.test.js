@@ -35,19 +35,19 @@ describe('bookend interface', () => {
 describe('bookend', () => {
     const SampleModule = class extends BookendInterface {
         getSetupCommand() {
-            return 'echo "hello"';
+            return Promise.resolve('echo "hello"');
         }
         getTeardownCommand() {
-            return 'echo "goodbye"';
+            return Promise.resolve('echo "goodbye"');
         }
     };
 
     const SampleModule2 = class extends BookendInterface {
         getSetupCommand() {
-            return 'echo "world"';
+            return Promise.resolve('echo "world"');
         }
         getTeardownCommand() {
-            return 'echo "mars"';
+            return Promise.resolve('echo "mars"');
         }
     };
 
@@ -58,10 +58,10 @@ describe('bookend', () => {
             assert.equal(obj.foo, 'bar');
         }
         getSetupCommand() {
-            return `echo "${this.foo}"`;
+            return Promise.resolve(`echo "${this.foo}"`);
         }
         getTeardownCommand() {
-            return `echo "${this.foo}"`;
+            return Promise.resolve(`echo "${this.foo}"`);
         }
     };
 
@@ -78,10 +78,10 @@ describe('bookend', () => {
         mockery.registerAllowable('notfound');
         mockery.registerMock('sample', class extends BookendInterface {
             getSetupCommand() {
-                return 'echo "llama"';
+                return Promise.resolve('echo "llama"');
             }
             getTeardownCommand() {
-                return 'echo "penguin"';
+                return Promise.resolve('echo "penguin"');
             }
         });
         mockery.registerMock('sample2', SampleModule3);
