@@ -101,10 +101,10 @@ class Bookend extends BookendInterface {
      * @return {Promise}
      */
     getSetupCommands(o) {
-        return Promise.all(this.setupList.map(m => ({
+        return Promise.all(this.setupList.map(m => m.obj.getSetupCommand(o).then(command => ({
             name: `setup-${m.name}`,
-            command: m.obj.getSetupCommand(o)
-        })));
+            command
+        }))));
     }
 
     /**
@@ -117,10 +117,10 @@ class Bookend extends BookendInterface {
      * @return {Promise}
      */
     getTeardownCommands(o) {
-        return Promise.all(this.teardownList.map(m => ({
+        return Promise.all(this.teardownList.map(m => m.obj.getTeardownCommand(o).then(command => ({
             name: `teardown-${m.name}`,
-            command: m.obj.getTeardownCommand(o)
-        })));
+            command
+        }))));
     }
 }
 
