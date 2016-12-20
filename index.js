@@ -102,7 +102,7 @@ class Bookend extends BookendInterface {
      */
     getSetupCommands(o) {
         return Promise.all(this.setupList.map(m => m.obj.getSetupCommand(o).then(command => ({
-            name: `setup-${m.name}`,
+            name: `sd-setup-${m.name}`,
             command
         }))));
     }
@@ -118,7 +118,7 @@ class Bookend extends BookendInterface {
      */
     getTeardownCommands(o) {
         return Promise.all(this.teardownList.map(m => m.obj.getTeardownCommand(o).then(command => ({
-            name: `teardown-${m.name}`,
+            name: `sd-teardown-${m.name}`,
             command
         }))));
     }

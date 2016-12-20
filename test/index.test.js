@@ -125,11 +125,11 @@ describe('bookend', () => {
             return b.getSetupCommands().then((commands) => {
                 assert.deepEqual(commands, [
                     {
-                        name: 'setup-greeting',
+                        name: 'sd-setup-greeting',
                         command: 'echo "hello"'
                     },
                     {
-                        name: 'setup-planet',
+                        name: 'sd-setup-planet',
                         command: 'echo "world"'
                     }
                 ]);
@@ -142,15 +142,15 @@ describe('bookend', () => {
             return b.getSetupCommands().then((commands) => {
                 assert.deepEqual(commands, [
                     {
-                        name: 'setup-greeting',
+                        name: 'sd-setup-greeting',
                         command: 'echo "hello"'
                     },
                     {
-                        name: 'setup-sample',
+                        name: 'sd-setup-sample',
                         command: 'echo "llama"'
                     },
                     {
-                        name: 'setup-planet',
+                        name: 'sd-setup-planet',
                         command: 'echo "world"'
                     }
                 ]);
@@ -165,7 +165,7 @@ describe('bookend', () => {
             return b.getSetupCommands().then((commands) => {
                 assert.deepEqual(commands, [
                     {
-                        name: 'setup-sample2',
+                        name: 'sd-setup-sample2',
                         command: 'echo "bar"'
                     }
                 ]);
@@ -180,11 +180,11 @@ describe('bookend', () => {
             return b.getTeardownCommands().then((commands) => {
                 assert.deepEqual(commands, [
                     {
-                        name: 'teardown-greeting',
+                        name: 'sd-teardown-greeting',
                         command: 'echo "goodbye"'
                     },
                     {
-                        name: 'teardown-planet',
+                        name: 'sd-teardown-planet',
                         command: 'echo "mars"'
                     }
                 ]);
@@ -197,15 +197,15 @@ describe('bookend', () => {
             return b.getTeardownCommands().then((commands) => {
                 assert.deepEqual(commands, [
                     {
-                        name: 'teardown-greeting',
+                        name: 'sd-teardown-greeting',
                         command: 'echo "goodbye"'
                     },
                     {
-                        name: 'teardown-sample',
+                        name: 'sd-teardown-sample',
                         command: 'echo "penguin"'
                     },
                     {
-                        name: 'teardown-planet',
+                        name: 'sd-teardown-planet',
                         command: 'echo "mars"'
                     }
                 ]);
