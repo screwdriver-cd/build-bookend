@@ -10,7 +10,7 @@ npm install screwdriver-build-bookend
 ```
 
 ### Using the bookend interface
-Extend the bookend interface included in this module. You will need to define `getSetupCommand` and `getTeardownCommand` to return the commands needed to execute and return these in a promise.
+Extend the bookend interface in this module. You will need to define `getSetupCommand` and `getTeardownCommand` to return the commands needed to execute and return these in a promise.
 
 ```js
 const { BookendInterface } = require('screwdriver-build-bookend');
