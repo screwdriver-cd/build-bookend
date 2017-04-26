@@ -126,13 +126,11 @@ describe('bookend', () => {
                 assert.deepEqual(commands, [
                     {
                         name: 'sd-setup-greeting',
-                        command: 'echo "hello"',
-                        alwaysRun: true
+                        command: 'echo "hello"'
                     },
                     {
                         name: 'sd-setup-planet',
-                        command: 'echo "world"',
-                        alwaysRun: true
+                        command: 'echo "world"'
                     }
                 ]);
             });
@@ -145,18 +143,15 @@ describe('bookend', () => {
                 assert.deepEqual(commands, [
                     {
                         name: 'sd-setup-greeting',
-                        command: 'echo "hello"',
-                        alwaysRun: true
+                        command: 'echo "hello"'
                     },
                     {
                         name: 'sd-setup-sample',
-                        command: 'echo "llama"',
-                        alwaysRun: true
+                        command: 'echo "llama"'
                     },
                     {
                         name: 'sd-setup-planet',
-                        command: 'echo "world"',
-                        alwaysRun: true
+                        command: 'echo "world"'
                     }
                 ]);
             });
@@ -171,8 +166,7 @@ describe('bookend', () => {
                 assert.deepEqual(commands, [
                     {
                         name: 'sd-setup-sample2',
-                        command: 'echo "bar"',
-                        alwaysRun: true
+                        command: 'echo "bar"'
                     }
                 ]);
             });
@@ -187,13 +181,11 @@ describe('bookend', () => {
                 assert.deepEqual(commands, [
                     {
                         name: 'sd-teardown-greeting',
-                        command: 'echo "goodbye"',
-                        alwaysRun: true
+                        command: 'echo "goodbye"'
                     },
                     {
                         name: 'sd-teardown-planet',
-                        command: 'echo "mars"',
-                        alwaysRun: true
+                        command: 'echo "mars"'
                     }
                 ]);
             });
@@ -206,18 +198,15 @@ describe('bookend', () => {
                 assert.deepEqual(commands, [
                     {
                         name: 'sd-teardown-greeting',
-                        command: 'echo "goodbye"',
-                        alwaysRun: true
+                        command: 'echo "goodbye"'
                     },
                     {
                         name: 'sd-teardown-sample',
-                        command: 'echo "penguin"',
-                        alwaysRun: true
+                        command: 'echo "penguin"'
                     },
                     {
                         name: 'sd-teardown-planet',
-                        command: 'echo "mars"',
-                        alwaysRun: true
+                        command: 'echo "mars"'
                     }
                 ]);
             });
