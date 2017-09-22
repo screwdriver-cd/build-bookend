@@ -171,6 +171,31 @@ describe('bookend', () => {
                 ]);
             });
         });
+
+        it('should get a list of commands with aliases', () => {
+            const b = new Bookend(defaultModules, [
+                { greeting: 'foo' },
+                { sample: 'bar' },
+                { planet: 'baz' }
+            ], []);
+
+            return b.getSetupCommands().then((commands) => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'sd-setup-foo',
+                        command: 'echo "hello"'
+                    },
+                    {
+                        name: 'sd-setup-bar',
+                        command: 'echo "llama"'
+                    },
+                    {
+                        name: 'sd-setup-baz',
+                        command: 'echo "world"'
+                    }
+                ]);
+            });
+        });
     });
 
     describe('getTeardownCommands', () => {
@@ -206,6 +231,31 @@ describe('bookend', () => {
                     },
                     {
                         name: 'sd-teardown-planet',
+                        command: 'echo "mars"'
+                    }
+                ]);
+            });
+        });
+
+        it('should get a list of commands with aliases', () => {
+            const b = new Bookend(defaultModules, [], [
+                { greeting: 'foo' },
+                { sample: 'bar' },
+                { planet: 'baz' }
+            ]);
+
+            return b.getTeardownCommands().then((commands) => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'sd-teardown-foo',
+                        command: 'echo "goodbye"'
+                    },
+                    {
+                        name: 'sd-teardown-bar',
+                        command: 'echo "penguin"'
+                    },
+                    {
+                        name: 'sd-teardown-baz',
                         command: 'echo "mars"'
                     }
                 ]);
