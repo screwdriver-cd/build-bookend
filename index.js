@@ -48,10 +48,8 @@ function initializeBookend(defaultModules, list) {
             name = m;
             alias = m;
         } else {
-            // Use the first key as a module name if name is not set
-            // to support the format: { moduleName: moduleAlias }
-            name = m.name || Object.keys(m)[0];
-            alias = m[name] || name;
+            name = m.name;
+            alias = m.alias || name;
         }
 
         if (defaultModules[name]) {

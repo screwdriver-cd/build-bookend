@@ -174,9 +174,9 @@ describe('bookend', () => {
 
         it('should get a list of commands with aliases', () => {
             const b = new Bookend(defaultModules, [
-                { greeting: 'foo' },
-                { sample: 'bar' },
-                { planet: 'baz' }
+                { name: 'greeting', alias: 'foo' },
+                { name: 'sample', alias: 'bar' },
+                { name: 'planet', alias: 'baz' }
             ], []);
 
             return b.getSetupCommands().then((commands) => {
@@ -239,9 +239,9 @@ describe('bookend', () => {
 
         it('should get a list of commands with aliases', () => {
             const b = new Bookend(defaultModules, [], [
-                { greeting: 'foo' },
-                { sample: 'bar' },
-                { planet: 'baz' }
+                { name: 'greeting', alias: 'foo' },
+                { name: 'sample', alias: 'bar' },
+                { name: 'planet', alias: 'baz' }
             ]);
 
             return b.getTeardownCommands().then((commands) => {
