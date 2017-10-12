@@ -43,7 +43,9 @@ const b = new Bookend(
      */
     [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }],
     // Provide a list of plugins for teardown. format is the same as setup
-    [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }]
+    [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }],
+    // You can specify an alias for bookends
+    [ 'sample', { name: 'my-bookend-module-with-long-name', alias: 'my-bookend', config: { foo: 'bar' } }]
 );
 
 // Get the setup commands [ { name: 'setup-sample', command: '...' }, { name: 'setup-my-bookend', command: '...' } ] given the models and configuration for the pipeline, job, and build

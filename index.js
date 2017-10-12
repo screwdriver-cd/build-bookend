@@ -14,8 +14,11 @@ function loadModule(config) {
     if (typeof c === 'string') {
         c = {
             name: c,
+            alias: c,
             config: {}
         };
+    } else if (!c.alias) {
+        c.alias = c.name;
     }
 
     try {
@@ -23,7 +26,7 @@ function loadModule(config) {
 
         return {
             obj: new Obj(c.config),
-            name: c.name
+            name: c.alias
         };
     } catch (e) {
         throw new Error(`Could not initialize bookend plugin "${c.name}": ${e.message}`);
@@ -38,14 +41,29 @@ function loadModule(config) {
  */
 function initializeBookend(defaultModules, list) {
     return list.map((m) => {
-        if (typeof m === 'string' && defaultModules[m]) {
+        let name;
+        let alias;
+
+        if (typeof m === 'string') {
+            name = m;
+            alias = m;
+        } else {
+            name = m.name;
+            alias = m.alias || name;
+        }
+
+        if (defaultModules[name]) {
             return {
-                obj: defaultModules[m],
-                name: m
+                obj: defaultModules[name],
+                name: alias
             };
         }
 
-        return loadModule(m);
+        return loadModule({
+            name,
+            alias,
+            config: m.config || {}
+        });
     });
 }
 
