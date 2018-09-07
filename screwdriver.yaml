@@ -1,16 +1,17 @@
-workflow:
-    - publish
-
 shared:
     image: node:6
 
 jobs:
     main:
+        environment:
+            SD_SONAR_OPTS: "-Dsonar.sources=index.js -Dsonar.javascript.lcov.reportPath=artifacts/coverage/lcov.info"
+        requires: [~pr, ~commit]
         steps:
             - init: npm install
             - test: npm test
 
     publish:
+        requires: [main]
         template: screwdriver-cd/semantic-release 
         secrets:
             # Publishing to NPM
