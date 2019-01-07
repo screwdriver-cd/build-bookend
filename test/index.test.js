@@ -113,8 +113,8 @@ describe('bookend', () => {
             assert.throws(() => new Bookend(defaultModules, [
                 { name: 'sample2', config: { foo: 'foo' } }
             ], []), Error,
-                'Could not initialize bookend plugin "sample2": ' +
-                'expected \'foo\' to equal \'bar\'');
+            'Could not initialize bookend plugin "sample2": ' +
+            'expected \'foo\' to equal \'bar\'');
         });
     });
 
