@@ -1,5 +1,5 @@
 # Build Bookend
-[![Version][npm-image]][npm-url] ![Downloads][downloads-image] [![Build Status][status-image]][status-url] [![Open Issues][issues-image]][issues-url] [![Dependency Status][daviddm-image]][daviddm-url] ![License][license-image]
+[![Version][npm-image]][npm-url] ![Downloads][downloads-image] [![Build Status][status-image]][status-url] [![Open Issues][issues-image]][issues-url] ![License][license-image]
 
 > creates setup and teardown steps for builds
 
@@ -73,5 +73,3 @@ Code licensed under the BSD 3-Clause license. See LICENSE file for terms.
 [issues-url]: https://github.com/screwdriver-cd/screwdriver/issues
 [status-image]: https://cd.screwdriver.cd/pipelines/29/badge
 [status-url]: https://cd.screwdriver.cd/pipelines/29
-[daviddm-image]: https://david-dm.org/screwdriver-cd/build-bookend.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org/screwdriver-cd/build-bookend
