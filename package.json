@@ -1,6 +1,6 @@
 {
   "name": "screwdriver-build-bookend",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "creates setup and teardown steps for builds",
   "main": "index.js",
   "scripts": {
@@ -31,13 +31,13 @@
   ],
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^4.19.1",
-    "eslint-config-screwdriver": "^3.0.1",
+    "eslint": "^7.5.0",
+    "eslint-config-screwdriver": "^5.0.1",
     "mocha": "^8.2.1",
     "mocha-multi-reporters": "^1.5.1",
     "mocha-sonarqube-reporter": "^1.0.2",
-    "nyc": "^15.0.0",
-    "mockery": "^2.0.0"
+    "mockery": "^2.0.0",
+    "nyc": "^15.0.0"
   },
   "dependencies": {},
   "release": {

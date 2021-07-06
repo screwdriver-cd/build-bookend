@@ -1,4 +1,4 @@
-/* eslint-disable global-require, import/no-dynamic-require */
+/* eslint-disable global-require, import/no-dynamic-require, max-classes-per-file */
 
 'use strict';
 
@@ -40,7 +40,7 @@ function loadModule(config) {
  * @return {Array}               List of initialized plugins
  */
 function initializeBookend(defaultModules, list) {
-    return list.map((m) => {
+    return list.map(m => {
         let name;
         let alias;
 
@@ -119,10 +119,14 @@ class Bookend extends BookendInterface {
      * @return {Promise}
      */
     getSetupCommands(o) {
-        return Promise.all(this.setupList.map(m => m.obj.getSetupCommand(o).then(command => ({
-            name: `sd-setup-${m.name}`,
-            command
-        }))));
+        return Promise.all(
+            this.setupList.map(m =>
+                m.obj.getSetupCommand(o).then(command => ({
+                    name: `sd-setup-${m.name}`,
+                    command
+                }))
+            )
+        );
     }
 
     /**
@@ -135,10 +139,14 @@ class Bookend extends BookendInterface {
      * @return {Promise}
      */
     getTeardownCommands(o) {
-        return Promise.all(this.teardownList.map(m => m.obj.getTeardownCommand(o).then(command => ({
-            name: `sd-teardown-${m.name}`,
-            command
-        }))));
+        return Promise.all(
+            this.teardownList.map(m =>
+                m.obj.getTeardownCommand(o).then(command => ({
+                    name: `sd-teardown-${m.name}`,
+                    command
+                }))
+            )
+        );
     }
 }
 
