@@ -99,8 +99,11 @@ class Bookend extends BookendInterface {
     /**
      * Constructs the list of modules used by bookends
      * @constructor
-     * @param {Object}  defaultModules      key->instantiated plugin for default plugins provided by screwdriver-cd
-     * @param {Object}  config              Object keyed by cluster name with setup/teardown bookend in each.
+     * @param {Object}  defaultModules            key->instantiated plugin for default plugins provided by screwdriver-cd
+     * @param {Object}  config                    Object keyed by cluster name with setup/teardown bookend in each.
+     * @param {Object}  config.default            Default setup/teardown bookend config
+     * @param {Array}   config.default.setup      Default list of module names, or objects { name, config } for instantiation to use in sd-setup
+     * @param {Array}   config.default.teardown   Default list of module names, or objects { name, config } for instantiation to use in sd-teardown
      */
     constructor(defaultModules, config) {
         super();
