@@ -152,7 +152,7 @@ class Bookend extends BookendInterface {
      * @param  {String}         clusterName Cluster name
      * @return {Promise}
      */
-    getTeardownCommands(o, clusterName) {
+    getTeardownCommands(o, clusterName = 'default') {
         const bookends = this.bookends[clusterName] || this.bookends.default;
 
         return Promise.all(
