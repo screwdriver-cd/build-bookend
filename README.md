@@ -37,15 +37,22 @@ const b = new Bookend(
     // Provide a set of default instantiated plugins
     { 'sample': new SampleBookend() },
     /*
-        Provide a list of plugins to use for setup, by name or with a config object
+        Provide a list of plugins to use for setup and teardown, by name or with a config object
         You can also choose to include your own modules with a config, these will be initialized for you with the given config.
         The following config will use the default sample plugin, then the users my-bookend plugin
      */
-    [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }],
-    // Provide a list of plugins for teardown. format is the same as setup
-    [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }],
-    // You can specify an alias for bookends
-    [ 'sample', { name: 'my-bookend-module-with-long-name', alias: 'my-bookend', config: { foo: 'bar' } }]
+    {
+        default: {
+            setup: [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }],
+            teardown: [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }]
+        },
+        // You can switch bookends for each build cluster when multi build cluster is enabled
+        clusterName: {
+            // You can specify an alias for bookends
+            setup: [ 'sample', { name: 'my-bookend-module-with-long-name', alias: 'my-bookend', config: { foo: 'bar' } }],
+            teardown: [ 'sample', { name: 'my-bookend', config: { foo: 'bar' } }]
+        }
+    }
 );
 
 // Get the setup commands [ { name: 'setup-sample', command: '...' }, { name: 'setup-my-bookend', command: '...' } ] given the models and configuration for the pipeline, job, and build
