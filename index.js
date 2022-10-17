@@ -122,11 +122,11 @@ class Bookend extends BookendInterface {
     /**
      * Gives the commands needed for setup before the build starts
      * @method getSetupCommands
-     * @param  {Object}         o           Information about the environment for setup
-     * @param  {PipelineModel}  o.pipeline  Pipeline model for the build
-     * @param  {JobModel}       o.job       Job model for the build
-     * @param  {Object}         o.build     Build configuration for the build (before creation)
-     * @param  {String}         clusterName Cluster name
+     * @param  {Object}         o             Information about the environment for setup
+     * @param  {PipelineModel}  o.pipeline    Pipeline model for the build
+     * @param  {JobModel}       o.job         Job model for the build
+     * @param  {Object}         o.build       Build configuration for the build (before creation)
+     * @param  {String}         [clusterName] Cluster name
      * @return {Promise}
      */
     getSetupCommands(o, clusterName = 'default') {
@@ -145,11 +145,11 @@ class Bookend extends BookendInterface {
     /**
      * Gives the commands needed for teardown after the build completes
      * @method getTeardownCommands
-     * @param  {Object}         o           Information about the environment for setup
-     * @param  {PipelineModel}  o.pipeline  Pipeline model for the build
-     * @param  {JobModel}       o.job       Job model for the build
-     * @param  {Object}         o.build     Build configuration for the build (before creation)
-     * @param  {String}         clusterName Cluster name
+     * @param  {Object}         o             Information about the environment for setup
+     * @param  {PipelineModel}  o.pipeline    Pipeline model for the build
+     * @param  {JobModel}       o.job         Job model for the build
+     * @param  {Object}         o.build       Build configuration for the build (before creation)
+     * @param  {String}         [clusterName] Cluster name
      * @return {Promise}
      */
     getTeardownCommands(o, clusterName = 'default') {
