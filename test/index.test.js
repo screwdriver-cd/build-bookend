@@ -80,11 +80,25 @@ describe('bookend', () => {
         planet: new SampleModule2()
     };
 
+    const bookends = {
+        default: {},
+        clusterA: {}
+    };
+
     before(() => {
         mockery.enable({ useCleanCache: true });
     });
 
     beforeEach(() => {
+        bookends.default = {
+            setup: [],
+            teardown: []
+        };
+        bookends.clusterA = {
+            setup: [],
+            teardown: []
+        };
+
         mockery.registerAllowable('notfound');
         mockery.registerMock(
             'sample',
@@ -112,22 +126,26 @@ describe('bookend', () => {
 
     describe('constructor', () => {
         it('construct properly', () => {
-            const b = new Bookend(defaultModules, [], []);
+            const b = new Bookend(defaultModules, bookends);
 
             assert.instanceOf(b, BookendInterface);
         });
 
         it('should fail if a module can not be found', () => {
+            bookends.default.setup = ['notfound'];
+
             assert.throws(
-                () => new Bookend(defaultModules, ['notfound'], []),
+                () => new Bookend(defaultModules, bookends),
                 Error,
                 `Could not initialize bookend plugin "notfound": Cannot find module 'notfound'\n`
             );
         });
 
         it('should fail if a module is not initialized properly', () => {
+            bookends.default.setup = [{ name: 'sample2', config: { foo: 'foo' } }];
+
             assert.throws(
-                () => new Bookend(defaultModules, [{ name: 'sample2', config: { foo: 'foo' } }], []),
+                () => new Bookend(defaultModules, bookends),
                 Error,
                 "Could not initialize bookend plugin \"sample2\": expected 'foo' to equal 'bar'"
             );
@@ -136,7 +154,9 @@ describe('bookend', () => {
 
     describe('getSetupCommands', () => {
         it('should get a list of commands from default modules', () => {
-            const b = new Bookend(defaultModules, ['greeting', 'planet'], []);
+            bookends.default.setup = ['greeting', 'planet'];
+
+            const b = new Bookend(defaultModules, bookends);
 
             return b.getSetupCommands().then(commands => {
                 assert.deepEqual(commands, [
@@ -153,7 +173,9 @@ describe('bookend', () => {
         });
 
         it('should get a list of commands from default and user modules', () => {
-            const b = new Bookend(defaultModules, ['greeting', 'sample', 'planet'], []);
+            bookends.default.setup = ['greeting', 'sample', 'planet'];
+
+            const b = new Bookend(defaultModules, bookends);
 
             return b.getSetupCommands().then(commands => {
                 assert.deepEqual(commands, [
@@ -174,7 +196,9 @@ describe('bookend', () => {
         });
 
         it('should properly use user modules with a config', () => {
-            const b = new Bookend(defaultModules, [{ name: 'sample2', config: { foo: 'bar' } }], []);
+            bookends.default.setup = [{ name: 'sample2', config: { foo: 'bar' } }];
+
+            const b = new Bookend(defaultModules, bookends);
 
             return b.getSetupCommands().then(commands => {
                 assert.deepEqual(commands, [
@@ -187,15 +211,13 @@ describe('bookend', () => {
         });
 
         it('should get a list of commands with aliases', () => {
-            const b = new Bookend(
-                defaultModules,
-                [
-                    { name: 'greeting', alias: 'foo' },
-                    { name: 'sample', alias: 'bar' },
-                    { name: 'planet', alias: 'baz' }
-                ],
-                []
-            );
+            bookends.default.setup = [
+                { name: 'greeting', alias: 'foo' },
+                { name: 'sample', alias: 'bar' },
+                { name: 'planet', alias: 'baz' }
+            ];
+
+            const b = new Bookend(defaultModules, bookends);
 
             return b.getSetupCommands().then(commands => {
                 assert.deepEqual(commands, [
@@ -214,11 +236,50 @@ describe('bookend', () => {
                 ]);
             });
         });
+
+        describe('when use multi build cluster', () => {
+            it('should get a list of commands from clusterA bookend', () => {
+                bookends.clusterA.setup = ['greeting', 'planet'];
+
+                const b = new Bookend(defaultModules, bookends);
+
+                return b.getSetupCommands({}, 'clusterA').then(commands => {
+                    assert.deepEqual(commands, [
+                        {
+                            name: 'sd-setup-greeting',
+                            command: 'echo "hello"'
+                        },
+                        {
+                            name: 'sd-setup-planet',
+                            command: 'echo "world"'
+                        }
+                    ]);
+                });
+            });
+
+            it('should get a list of commands from default bookends', () => {
+                bookends.default.setup = ['greeting'];
+                bookends.clusterA.setup = ['planet'];
+
+                const b = new Bookend(defaultModules, bookends);
+
+                return b.getSetupCommands({}, 'notExistsCluster').then(commands => {
+                    assert.deepEqual(commands, [
+                        {
+                            name: 'sd-setup-greeting',
+                            command: 'echo "hello"'
+                        }
+                    ]);
+                });
+            });
+        });
     });
 
     describe('getTeardownCommands', () => {
         it('should get a list of commands from default modules', () => {
-            const b = new Bookend(defaultModules, [], ['greeting', 'planet']);
+            bookends.default.teardown = ['greeting', 'planet'];
+
+            const b = new Bookend(defaultModules, bookends);
 
             return b.getTeardownCommands().then(commands => {
                 assert.deepEqual(commands, [
@@ -235,7 +296,9 @@ describe('bookend', () => {
         });
 
         it('should get a list of commands from default and user modules', () => {
-            const b = new Bookend(defaultModules, [], ['greeting', 'sample', 'planet']);
+            bookends.default.teardown = ['greeting', 'sample', 'planet'];
+
+            const b = new Bookend(defaultModules, bookends);
 
             return b.getTeardownCommands().then(commands => {
                 assert.deepEqual(commands, [
@@ -255,16 +318,29 @@ describe('bookend', () => {
             });
         });
 
+        it('should properly use user modules with a config', () => {
+            bookends.default.teardown = [{ name: 'sample2', config: { foo: 'bar' } }];
+
+            const b = new Bookend(defaultModules, bookends);
+
+            return b.getTeardownCommands().then(commands => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'sd-teardown-sample2',
+                        command: 'echo "bar"'
+                    }
+                ]);
+            });
+        });
+
         it('should get a list of commands with aliases', () => {
-            const b = new Bookend(
-                defaultModules,
-                [],
-                [
-                    { name: 'greeting', alias: 'foo' },
-                    { name: 'sample', alias: 'bar' },
-                    { name: 'planet', alias: 'baz' }
-                ]
-            );
+            bookends.default.teardown = [
+                { name: 'greeting', alias: 'foo' },
+                { name: 'sample', alias: 'bar' },
+                { name: 'planet', alias: 'baz' }
+            ];
+
+            const b = new Bookend(defaultModules, bookends);
 
             return b.getTeardownCommands().then(commands => {
                 assert.deepEqual(commands, [
@@ -281,6 +357,43 @@ describe('bookend', () => {
                         command: 'echo "mars"'
                     }
                 ]);
+            });
+        });
+
+        describe('when use multi build cluster', () => {
+            it('should get a list of commands from clusterA bookend', () => {
+                bookends.clusterA.teardown = ['greeting', 'planet'];
+
+                const b = new Bookend(defaultModules, bookends);
+
+                return b.getTeardownCommands({}, 'clusterA').then(commands => {
+                    assert.deepEqual(commands, [
+                        {
+                            name: 'sd-teardown-greeting',
+                            command: 'echo "goodbye"'
+                        },
+                        {
+                            name: 'sd-teardown-planet',
+                            command: 'echo "mars"'
+                        }
+                    ]);
+                });
+            });
+
+            it('should get a list of commands from default bookends', () => {
+                bookends.default.teardown = ['greeting'];
+                bookends.clusterA.teardown = ['planet'];
+
+                const b = new Bookend(defaultModules, bookends);
+
+                return b.getTeardownCommands({}, 'notExistsCluster').then(commands => {
+                    assert.deepEqual(commands, [
+                        {
+                            name: 'sd-teardown-greeting',
+                            command: 'echo "goodbye"'
+                        }
+                    ]);
+                });
             });
         });
     });

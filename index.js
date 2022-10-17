@@ -99,28 +99,41 @@ class Bookend extends BookendInterface {
     /**
      * Constructs the list of modules used by bookends
      * @constructor
-     * @param {Object}  defaultModules      key->instantiated plugin for default plugins provided by screwdriver-cd
-     * @param {Array}   setup               List of module names, or objects { name, config } for instantiation to use in sd-setup
-     * @param {Array}   teardown            List of module names, or objects { name, config } for instantiation to use in sd-teardown
+     * @param {Object}  defaultModules            key->instantiated plugin for default plugins provided by screwdriver-cd
+     * @param {Object}  config                    Object keyed by cluster name with value setup/teardown bookend.
+     * @param {Object}  config.default            Default setup/teardown bookend config
+     * @param {Array}   config.default.setup      Default list of module names, or objects { name, config } for instantiation to use in sd-setup
+     * @param {Array}   config.default.teardown   Default list of module names, or objects { name, config } for instantiation to use in sd-teardown
      */
-    constructor(defaultModules, setup, teardown) {
+    constructor(defaultModules, config) {
         super();
-        this.setupList = initializeBookend(defaultModules, setup);
-        this.teardownList = initializeBookend(defaultModules, teardown);
+        this.bookends = {};
+
+        Object.keys(config).forEach(clusterName => {
+            const { setup, teardown } = config[clusterName];
+
+            this.bookends[clusterName] = {
+                setupList: initializeBookend(defaultModules, setup),
+                teardownList: initializeBookend(defaultModules, teardown)
+            };
+        });
     }
 
     /**
      * Gives the commands needed for setup before the build starts
      * @method getSetupCommands
-     * @param  {Object}         o           Information about the environment for setup
-     * @param  {PipelineModel}  o.pipeline  Pipeline model for the build
-     * @param  {JobModel}       o.job       Job model for the build
-     * @param  {Object}         o.build     Build configuration for the build (before creation)
+     * @param  {Object}         o             Information about the environment for setup
+     * @param  {PipelineModel}  o.pipeline    Pipeline model for the build
+     * @param  {JobModel}       o.job         Job model for the build
+     * @param  {Object}         o.build       Build configuration for the build (before creation)
+     * @param  {String}         [clusterName] Cluster name
      * @return {Promise}
      */
-    getSetupCommands(o) {
+    getSetupCommands(o, clusterName = 'default') {
+        const bookends = this.bookends[clusterName] || this.bookends.default;
+
         return Promise.all(
-            this.setupList.map(m =>
+            bookends.setupList.map(m =>
                 m.obj.getSetupCommand(o).then(command => ({
                     name: `sd-setup-${m.name}`,
                     command
@@ -132,15 +145,18 @@ class Bookend extends BookendInterface {
     /**
      * Gives the commands needed for teardown after the build completes
      * @method getTeardownCommands
-     * @param  {Object}         o           Information about the environment for setup
-     * @param  {PipelineModel}  o.pipeline  Pipeline model for the build
-     * @param  {JobModel}       o.job       Job model for the build
-     * @param  {Object}         o.build     Build configuration for the build (before creation)
+     * @param  {Object}         o             Information about the environment for setup
+     * @param  {PipelineModel}  o.pipeline    Pipeline model for the build
+     * @param  {JobModel}       o.job         Job model for the build
+     * @param  {Object}         o.build       Build configuration for the build (before creation)
+     * @param  {String}         [clusterName] Cluster name
      * @return {Promise}
      */
-    getTeardownCommands(o) {
+    getTeardownCommands(o, clusterName = 'default') {
+        const bookends = this.bookends[clusterName] || this.bookends.default;
+
         return Promise.all(
-            this.teardownList.map(m =>
+            bookends.teardownList.map(m =>
                 m.obj.getTeardownCommand(o).then(command => ({
                     name: `sd-teardown-${m.name}`,
                     command
