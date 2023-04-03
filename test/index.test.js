@@ -398,3 +398,202 @@ describe('bookend', () => {
         });
     });
 });
+
+describe('nested bookends configuration', () => {
+    const SampleModule = class extends BookendInterface {
+        getSetupCommand() {
+            return Promise.resolve('echo "I am altering the deal"');
+        }
+
+        getTeardownCommand() {
+            return Promise.resolve('echo "pray I don\'t alter it further"');
+        }
+    };
+    const SampleModule1 = class extends BookendInterface {
+        getSetupCommand() {
+            return Promise.resolve('echo "force is strong"');
+        }
+
+        getTeardownCommand() {
+            return Promise.resolve('echo "you don\'t know the power of the dark side"');
+        }
+    };
+    const SampleModule2 = class extends BookendInterface {
+        getSetupCommand() {
+            return Promise.resolve('echo "No! Try not. Do. Or do not. There is no try."');
+        }
+
+        getTeardownCommand() {
+            return Promise.resolve('echo "You must unlearn what you have learned"');
+        }
+    };
+    const SampleModule3 = class extends BookendInterface {
+        getSetupCommand() {
+            return Promise.resolve('echo "Be mindful of your thoughts, Anakin, they betray you"');
+        }
+
+        getTeardownCommand() {
+            return Promise.resolve('echo "Only a Sith deals in absolutes"');
+        }
+    };
+
+    const defaultModules = {
+        'obi-wan': new SampleModule3(),
+        vader: new SampleModule()
+    };
+
+    const nestedBookends = {
+        default: {
+            setup: ['obi-wan', 'vader'],
+            teardown: ['obi-wan', 'vader']
+        },
+        clusterA: {
+            setup: ['obi-wan', 'vader'],
+            teardown: ['obi-wan', 'vader']
+        },
+        clusterB: {
+            default: 'beta',
+            beta: {
+                default: 'k8s',
+                k8s: {
+                    setup: ['yoda', 'skywalker'],
+                    teardown: ['yoda', 'skywalker']
+                },
+                'k8s-arm': {
+                    setup: ['yoda', 'skywalker'],
+                    teardown: ['yoda', 'skywalker']
+                },
+                sls: {
+                    setup: ['yoda', 'skywalker'],
+                    teardown: ['yoda', 'skywalker']
+                },
+                'sls-arm': {
+                    setup: ['yoda', 'skywalker'],
+                    teardown: ['yoda', 'skywalker']
+                }
+            },
+            alpha: {
+                default: 'eks-arm',
+                'eks-arm': {
+                    setup: ['yoda', 'skywalker'],
+                    teardown: ['yoda', 'skywalker']
+                }
+            }
+        }
+    };
+
+    before(() => {
+        mockery.enable({ useCleanCache: true });
+    });
+
+    beforeEach(() => {
+        mockery.registerMock('skywalker', SampleModule1);
+        mockery.registerMock('yoda', SampleModule2);
+    });
+
+    afterEach(() => {
+        mockery.deregisterAll();
+        mockery.resetCache();
+    });
+
+    after(() => {
+        mockery.disable();
+    });
+
+    describe('constructor', () => {
+        it('should correctly traverse a nested bookend object and transform it', () => {
+            const b = new Bookend(defaultModules, nestedBookends);
+
+            assert.instanceOf(b, BookendInterface);
+            assert.isNotEmpty(b.bookends.clusterB);
+            assert.deepEqual(b.bookends.clusterB.default, b.bookends.clusterB.beta);
+        });
+    });
+
+    describe('getSetupCommands', async () => {
+        it('should get a list of commands from clusterB.beta.k8s bookend', () => {
+            const b = new Bookend(defaultModules, nestedBookends);
+
+            return b.getSetupCommands({}, 'clusterB.beta.k8s').then(commands => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'sd-setup-yoda',
+                        command: 'echo "No! Try not. Do. Or do not. There is no try."'
+                    },
+                    {
+                        name: 'sd-setup-skywalker',
+                        command: 'echo "force is strong"'
+                    }
+                ]);
+            });
+        });
+        it('should get a list of commands from clusterB.beta.k8s bookend', () => {
+            const b = new Bookend(defaultModules, nestedBookends);
+
+            return b.getSetupCommands({}, 'clusterB.beta.k8s').then(commands => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'sd-setup-yoda',
+                        command: 'echo "No! Try not. Do. Or do not. There is no try."'
+                    },
+                    {
+                        name: 'sd-setup-skywalker',
+                        command: 'echo "force is strong"'
+                    }
+                ]);
+            });
+        });
+        it('should get a list of commands from clusterB.beta.default bookend', async () => {
+            const b = new Bookend(defaultModules, nestedBookends);
+
+            const expected = await b.getSetupCommands({}, 'clusterB.beta.default');
+            const actual = await b.getSetupCommands({}, 'clusterB.beta.k8s');
+
+            assert.deepEqual(expected, actual);
+        });
+        it('should get a list of commands from clusterB.us-west-2.sls bookend', async () => {
+            const b = new Bookend(defaultModules, nestedBookends);
+
+            const expected = await b.getSetupCommands({}, 'clusterB.us-west-2.sls');
+            const actual = await b.getSetupCommands({}, 'clusterB.beta.sls');
+
+            assert.deepEqual(expected, actual);
+        });
+    });
+
+    describe('getTeardownCommands', () => {
+        it('should get a list of commands from clusterB.beta.k8s bookend', () => {
+            const b = new Bookend(defaultModules, nestedBookends);
+
+            return b.getTeardownCommands({}, 'clusterB.beta.k8s').then(commands => {
+                assert.deepEqual(commands, [
+                    {
+                        name: 'sd-teardown-yoda',
+                        command: 'echo "You must unlearn what you have learned"'
+                    },
+                    {
+                        name: 'sd-teardown-skywalker',
+                        command: 'echo "you don\'t know the power of the dark side"'
+                    }
+                ]);
+            });
+        });
+        it('should get a list of commands from clusterB.us-west-2.k8s-arm bookend', async () => {
+            const b = new Bookend(defaultModules, nestedBookends);
+
+            const expected = await b.getTeardownCommands({}, 'clusterB.us-west-2.k8s-arm');
+            const actual = await b.getTeardownCommands({}, 'clusterB.beta.k8s-arm');
+
+            assert.deepEqual(expected, actual);
+        });
+
+        it('should get a list of commands from clusterB.beta.default bookend', async () => {
+            const b = new Bookend(defaultModules, nestedBookends);
+
+            const expected = await b.getTeardownCommands({}, 'clusterB.beta.default');
+            const actual = await b.getTeardownCommands({}, 'clusterB.beta.k8s');
+
+            assert.deepEqual(expected, actual);
+        });
+    });
+});
