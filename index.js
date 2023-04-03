@@ -77,8 +77,8 @@ function initializeBookend(defaultModules, cachedModules, list) {
 
 /**
  *
- * @param {Object} config
- * @param {Object} defaultModules
+ * @param {Object} config Object keyed by cluster name with value setup/teardown bookend.
+ * @param {Object} defaultModules key->instantiated plugin for default plugins provided by screwdriver-cd
  * @returns bookend object with the modules initialized
  */
 function traverseBookends(config, defaultModules) {
@@ -121,13 +121,13 @@ function traverseBookends(config, defaultModules) {
 
 /**
  *
- * @param {Object} config
- * @param  {string} bookendKey
+ * @param {Object} bookends Object keyed by cluster name with value setup/teardown bookend.
+ * @param  {string} bookendKey Bookend key name
  * @returns Bookend object for given key and default if key is not found
  */
-function selectBookends(config, bookendKey) {
+function selectBookends(bookends, bookendKey) {
     const keys = bookendKey.split('.');
-    let current = config;
+    let current = bookends;
 
     for (const key of keys) {
         const child = current[key];
