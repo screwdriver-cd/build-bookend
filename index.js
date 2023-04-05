@@ -2,6 +2,8 @@
 
 'use strict';
 
+const Hoek = require('@hapi/hoek');
+
 /**
  * Tries to load an instantiate a module
  * @method loadModule
@@ -125,28 +127,22 @@ function traverseBookends(config, defaultModules) {
  * @param  {string} bookendKey Bookend key name
  * @returns Bookend object for given key and default if key is not found
  */
-function selectBookends(bookends, bookendKey) {
+
+const selectBookends = (bookendKey, bookends) => {
     const keys = bookendKey.split('.');
     let current = bookends;
 
     for (const key of keys) {
-        const child = current[key];
+        const result = Hoek.reach(current, key, { default: Hoek.reach(current, 'default') });
 
-        if (child && key !== 'default') {
-            current = child;
-        } else {
-            const defaultKey = current.default;
-
-            if (defaultKey) {
-                current = typeof defaultKey === 'string' ? current[defaultKey] : defaultKey;
-            } else {
-                return null;
-            }
+        if (result.setupList && result.teardownList) {
+            return result;
         }
+        current = result;
     }
 
-    return current;
-}
+    return null;
+};
 
 /**
  * Defines the API for a bookend plugin
