@@ -39,11 +39,11 @@ function loadModule(config) {
  * Initializes plugins for bookend
  * @method initializeBookend
  * @param  {Array}           defaultModules List of default plugins
- * @param  {Array}           list List of plugins, or plugin configs
  * @param  {Array}           cachedModules of cached plugins
+ * @param  {Array}           list List of plugins, or plugin configs
  * @return {Array}           List of initialized plugins
  */
-function initializeBookend(defaultModules, list, cachedModules) {
+function initializeBookend(defaultModules, cachedModules, list) {
     return list.map(m => {
         let name;
         let alias;
