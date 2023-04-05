@@ -198,8 +198,6 @@ class Bookend extends BookendInterface {
      * @return {Promise}
      */
     getSetupCommands(o, bookendKeyName = 'default') {
-        console.log(o, bookendKeyName);
-
         const bookends = selectBookends(this.bookends, bookendKeyName) || this.bookends.default;
 
         return Promise.all(
