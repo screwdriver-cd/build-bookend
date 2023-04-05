@@ -38,11 +38,12 @@ function loadModule(config) {
 /**
  * Initializes plugins for bookend
  * @method initializeBookend
- * @param  {Array}          list List of plugins, or plugin configs
- * @param  {Array}           list List of cached plugins
- * @return {Array}               List of initialized plugins
+ * @param  {Array}           defaultModules List of default plugins
+ * @param  {Array}           list List of plugins, or plugin configs
+ * @param  {Array}           cachedModules of cached plugins
+ * @return {Array}           List of initialized plugins
  */
-function initializeBookend(defaultModules, cachedModules, list) {
+function initializeBookend(defaultModules, list, cachedModules) {
     return list.map(m => {
         let name;
         let alias;
@@ -124,11 +125,10 @@ function traverseBookends(config, defaultModules) {
 /**
  *
  * @param {Object} bookends Object keyed by cluster name with value setup/teardown bookend.
- * @param  {string} bookendKey Bookend key name
+ * @param  {String} bookendKey Bookend key name
  * @returns Bookend object for given key and default if key is not found
  */
-
-const selectBookends = (bookendKey, bookends) => {
+const selectBookends = (bookends, bookendKey) => {
     const keys = bookendKey.split('.');
     let current = bookends;
 
@@ -198,6 +198,8 @@ class Bookend extends BookendInterface {
      * @return {Promise}
      */
     getSetupCommands(o, bookendKeyName = 'default') {
+        console.log(o, bookendKeyName);
+
         const bookends = selectBookends(this.bookends, bookendKeyName) || this.bookends.default;
 
         return Promise.all(
