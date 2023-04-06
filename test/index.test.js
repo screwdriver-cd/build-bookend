@@ -243,7 +243,7 @@ describe('bookend', () => {
 
                 const b = new Bookend(defaultModules, bookends);
 
-                return b.getSetupCommands({}, 'clusterA').then(commands => {
+                return b.getSetupCommands({}, { cluster: 'clusterA' }).then(commands => {
                     assert.deepEqual(commands, [
                         {
                             name: 'sd-setup-greeting',
@@ -366,7 +366,7 @@ describe('bookend', () => {
 
                 const b = new Bookend(defaultModules, bookends);
 
-                return b.getTeardownCommands({}, 'clusterA').then(commands => {
+                return b.getTeardownCommands({}, { cluster: 'clusterA' }).then(commands => {
                     assert.deepEqual(commands, [
                         {
                             name: 'sd-teardown-greeting',
@@ -514,7 +514,7 @@ describe('nested bookends configuration', () => {
         it('should get a list of commands from clusterB.beta.k8s bookend', () => {
             const b = new Bookend(defaultModules, nestedBookends);
 
-            return b.getSetupCommands({}, 'clusterB.beta.k8s').then(commands => {
+            return b.getSetupCommands({}, { cluster: 'clusterB', env: 'beta', executor: 'k8s' }).then(commands => {
                 assert.deepEqual(commands, [
                     {
                         name: 'sd-setup-yoda',
@@ -530,7 +530,7 @@ describe('nested bookends configuration', () => {
         it('should get a list of commands from clusterB.beta.k8s bookend', () => {
             const b = new Bookend(defaultModules, nestedBookends);
 
-            return b.getSetupCommands({}, 'clusterB.beta.k8s').then(commands => {
+            return b.getSetupCommands({}, { cluster: 'clusterB', env: 'beta', executor: 'k8s' }).then(commands => {
                 assert.deepEqual(commands, [
                     {
                         name: 'sd-setup-yoda',
@@ -546,16 +546,16 @@ describe('nested bookends configuration', () => {
         it('should get a list of commands from clusterB.beta.default bookend', async () => {
             const b = new Bookend(defaultModules, nestedBookends);
 
-            const expected = await b.getSetupCommands({}, 'clusterB.beta.default');
-            const actual = await b.getSetupCommands({}, 'clusterB.beta.k8s');
+            const expected = await b.getSetupCommands({}, { cluster: 'clusterB', env: 'beta', executor: 'default' });
+            const actual = await b.getSetupCommands({}, { cluster: 'clusterB', env: 'beta', executor: 'k8s' });
 
             assert.deepEqual(expected, actual);
         });
         it('should get a list of commands from clusterB.us-west-2.sls bookend', async () => {
             const b = new Bookend(defaultModules, nestedBookends);
 
-            const expected = await b.getSetupCommands({}, 'clusterB.us-west-2.sls');
-            const actual = await b.getSetupCommands({}, 'clusterB.beta.sls');
+            const expected = await b.getSetupCommands({}, { cluster: 'clusterB', env: 'us-west-2', executor: 'sls' });
+            const actual = await b.getSetupCommands({}, { cluster: 'clusterB', env: 'beta', executor: 'k8s-arm' });
 
             assert.deepEqual(expected, actual);
         });
@@ -565,7 +565,7 @@ describe('nested bookends configuration', () => {
         it('should get a list of commands from clusterB.beta.k8s bookend', () => {
             const b = new Bookend(defaultModules, nestedBookends);
 
-            return b.getTeardownCommands({}, 'clusterB.beta.k8s').then(commands => {
+            return b.getTeardownCommands({}, { cluster: 'clusterB', env: 'beta', executor: 'k8s' }).then(commands => {
                 assert.deepEqual(commands, [
                     {
                         name: 'sd-teardown-yoda',
@@ -581,8 +581,11 @@ describe('nested bookends configuration', () => {
         it('should get a list of commands from clusterB.us-west-2.k8s-arm bookend', async () => {
             const b = new Bookend(defaultModules, nestedBookends);
 
-            const expected = await b.getTeardownCommands({}, 'clusterB.us-west-2.k8s-arm');
-            const actual = await b.getTeardownCommands({}, 'clusterB.beta.k8s-arm');
+            const expected = await b.getTeardownCommands(
+                {},
+                { cluster: 'clusterB', env: 'us-west-2', executor: 'k8s-arm' }
+            );
+            const actual = await b.getTeardownCommands({}, { cluster: 'clusterB', env: 'beta', executor: 'k8s-arm' });
 
             assert.deepEqual(expected, actual);
         });
@@ -590,8 +593,8 @@ describe('nested bookends configuration', () => {
         it('should get a list of commands from clusterB.beta.default bookend', async () => {
             const b = new Bookend(defaultModules, nestedBookends);
 
-            const expected = await b.getTeardownCommands({}, 'clusterB.beta.default');
-            const actual = await b.getTeardownCommands({}, 'clusterB.beta.k8s');
+            const expected = await b.getTeardownCommands({}, { cluster: 'clusterB', env: 'beta', executor: 'default' });
+            const actual = await b.getTeardownCommands({}, { cluster: 'clusterB', env: 'beta', executor: 'k8s' });
 
             assert.deepEqual(expected, actual);
         });

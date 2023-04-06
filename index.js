@@ -129,10 +129,10 @@ function traverseBookends(config, defaultModules) {
  * @returns Bookend object for given key and default if key is not found
  */
 const selectBookends = (bookends, bookendKey) => {
-    const keys = bookendKey.split('.');
+    const { cluster, env, executor } = bookendKey;
     let current = bookends;
 
-    for (const key of keys) {
+    for (const key of [cluster, env, executor]) {
         const result = Hoek.reach(current, key, { default: Hoek.reach(current, 'default') });
 
         if (result.setupList && result.teardownList) {
@@ -194,11 +194,11 @@ class Bookend extends BookendInterface {
      * @param  {PipelineModel}  o.pipeline    Pipeline model for the build
      * @param  {JobModel}       o.job         Job model for the build
      * @param  {Object}         o.build       Build configuration for the build (before creation)
-     * @param  {String}         [bookendKeyName] Bookend key name
+     * @param  {String}         [bookendKey]  Bookend key - { cluster, env, executor }
      * @return {Promise}
      */
-    getSetupCommands(o, bookendKeyName = 'default') {
-        const bookends = selectBookends(this.bookends, bookendKeyName) || this.bookends.default;
+    getSetupCommands(o, bookendKey = { cluster: 'default' }) {
+        const bookends = selectBookends(this.bookends, bookendKey) || this.bookends.default;
 
         return Promise.all(
             bookends.setupList.map(m => {
@@ -217,11 +217,11 @@ class Bookend extends BookendInterface {
      * @param  {PipelineModel}  o.pipeline    Pipeline model for the build
      * @param  {JobModel}       o.job         Job model for the build
      * @param  {Object}         o.build       Build configuration for the build (before creation)
-     * @param  {String}         [bookendKeyName] Bookend key name
+     * @param  {Object}         [bookendKey]  Bookend key - { cluster, env, executor }
      * @return {Promise}
      */
-    getTeardownCommands(o, bookendKeyName = 'default') {
-        const bookends = selectBookends(this.bookends, bookendKeyName) || this.bookends.default;
+    getTeardownCommands(o, bookendKey = { cluster: 'default' }) {
+        const bookends = selectBookends(this.bookends, bookendKey) || this.bookends.default;
 
         return Promise.all(
             bookends.teardownList.map(m =>
