@@ -10,7 +10,7 @@ const Hoek = require('@hapi/hoek');
  * @param  {String|Object}   config Something that can define the module name to instantiate
  * @return {Object}                 Instantiated plugin
  */
-function loadModule(config) {
+function loadModule(config, cachedModules) {
     let c = config;
 
     if (typeof c === 'string') {
@@ -23,13 +23,21 @@ function loadModule(config) {
         c.alias = c.name;
     }
 
+    if (cachedModules[c.name]) {
+        return cachedModules[c.name];
+    }
+
     try {
         const Obj = require(c.name);
 
-        return {
+        const module = {
             obj: new Obj(c.config),
             name: c.alias
         };
+
+        cachedModules[c.name] = module;
+
+        return module;
     } catch (e) {
         throw new Error(`Could not initialize bookend plugin "${c.name}": ${e.message}`);
     }
@@ -62,17 +70,15 @@ function initializeBookend(defaultModules, cachedModules, list) {
                 name: alias
             };
         }
-        if (cachedModules[name]) {
-            return cachedModules[name];
-        }
 
-        const module = loadModule({
-            name,
-            alias,
-            config: m.config || {}
-        });
-
-        cachedModules[name] = module;
+        const module = loadModule(
+            {
+                name,
+                alias,
+                config: m.config || {}
+            },
+            cachedModules
+        );
 
         return module;
     });
