@@ -2,13 +2,15 @@
 
 'use strict';
 
+const Hoek = require('@hapi/hoek');
+
 /**
  * Tries to load an instantiate a module
  * @method loadModule
  * @param  {String|Object}   config Something that can define the module name to instantiate
  * @return {Object}                 Instantiated plugin
  */
-function loadModule(config) {
+function loadModule(config, cachedModules) {
     let c = config;
 
     if (typeof c === 'string') {
@@ -21,13 +23,21 @@ function loadModule(config) {
         c.alias = c.name;
     }
 
+    if (cachedModules[c.name]) {
+        return cachedModules[c.name];
+    }
+
     try {
         const Obj = require(c.name);
 
-        return {
+        const module = {
             obj: new Obj(c.config),
             name: c.alias
         };
+
+        cachedModules[c.name] = module;
+
+        return module;
     } catch (e) {
         throw new Error(`Could not initialize bookend plugin "${c.name}": ${e.message}`);
     }
@@ -36,10 +46,12 @@ function loadModule(config) {
 /**
  * Initializes plugins for bookend
  * @method initializeBookend
- * @param  {Array}          list List of plugins, or plugin configs
- * @return {Array}               List of initialized plugins
+ * @param  {Array}           defaultModules List of default plugins
+ * @param  {Array}           cachedModules of cached plugins
+ * @param  {Array}           list List of plugins, or plugin configs
+ * @return {Array}           List of initialized plugins
  */
-function initializeBookend(defaultModules, list) {
+function initializeBookend(defaultModules, cachedModules, list) {
     return list.map(m => {
         let name;
         let alias;
@@ -59,13 +71,84 @@ function initializeBookend(defaultModules, list) {
             };
         }
 
-        return loadModule({
-            name,
-            alias,
-            config: m.config || {}
-        });
+        const module = loadModule(
+            {
+                name,
+                alias,
+                config: m.config || {}
+            },
+            cachedModules
+        );
+
+        return module;
     });
 }
+
+/**
+ *
+ * @param {Object} config Object keyed by cluster name with value setup/teardown bookend.
+ * @param {Object} defaultModules key->instantiated plugin for default plugins provided by screwdriver-cd
+ * @returns bookend object with the modules initialized
+ */
+function traverseBookends(config, defaultModules) {
+    const result = {};
+    const stack = [[config, result]];
+    const cachedModules = [];
+
+    while (stack.length > 0) {
+        const [node, parent] = stack.pop();
+
+        for (const [key, current] of Object.entries(node)) {
+            let child = parent[key] || {};
+            let processNode = current;
+
+            if (key === 'default') {
+                if (typeof current === 'string' && node[current]) {
+                    parent[key] = current;
+                    processNode = node[current];
+                } else {
+                    child = parent;
+                }
+            }
+
+            if (typeof processNode === 'object') {
+                if (processNode.setup && processNode.teardown) {
+                    parent[key] = {
+                        setupList: initializeBookend(defaultModules, cachedModules, processNode.setup),
+                        teardownList: initializeBookend(defaultModules, cachedModules, processNode.teardown)
+                    };
+                } else {
+                    stack.push([processNode, child]);
+                    parent[key] = child;
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+/**
+ *
+ * @param {Object} bookends Object keyed by cluster name with value setup/teardown bookend.
+ * @param  {String} bookendKey Bookend key name
+ * @returns Bookend object for given key and default if key is not found
+ */
+const selectBookends = (bookends, bookendKey) => {
+    const { cluster, env, executor } = bookendKey;
+    let current = bookends;
+
+    for (const key of [cluster, env, executor]) {
+        const result = Hoek.reach(current, key, { default: Hoek.reach(current, 'default') });
+
+        if (result.setupList && result.teardownList) {
+            return result;
+        }
+        current = result;
+    }
+
+    return null;
+};
 
 /**
  * Defines the API for a bookend plugin
@@ -107,16 +190,7 @@ class Bookend extends BookendInterface {
      */
     constructor(defaultModules, config) {
         super();
-        this.bookends = {};
-
-        Object.keys(config).forEach(clusterName => {
-            const { setup, teardown } = config[clusterName];
-
-            this.bookends[clusterName] = {
-                setupList: initializeBookend(defaultModules, setup),
-                teardownList: initializeBookend(defaultModules, teardown)
-            };
-        });
+        this.bookends = traverseBookends(config, defaultModules);
     }
 
     /**
@@ -126,19 +200,19 @@ class Bookend extends BookendInterface {
      * @param  {PipelineModel}  o.pipeline    Pipeline model for the build
      * @param  {JobModel}       o.job         Job model for the build
      * @param  {Object}         o.build       Build configuration for the build (before creation)
-     * @param  {String}         [clusterName] Cluster name
+     * @param  {String}         [bookendKey]  Bookend key - { cluster, env, executor }
      * @return {Promise}
      */
-    getSetupCommands(o, clusterName = 'default') {
-        const bookends = this.bookends[clusterName] || this.bookends.default;
+    getSetupCommands(o, bookendKey = { cluster: 'default' }) {
+        const bookends = selectBookends(this.bookends, bookendKey) || this.bookends.default;
 
         return Promise.all(
-            bookends.setupList.map(m =>
-                m.obj.getSetupCommand(o).then(command => ({
+            bookends.setupList.map(m => {
+                return m.obj.getSetupCommand(o).then(command => ({
                     name: `sd-setup-${m.name}`,
                     command
-                }))
-            )
+                }));
+            })
         );
     }
 
@@ -149,11 +223,11 @@ class Bookend extends BookendInterface {
      * @param  {PipelineModel}  o.pipeline    Pipeline model for the build
      * @param  {JobModel}       o.job         Job model for the build
      * @param  {Object}         o.build       Build configuration for the build (before creation)
-     * @param  {String}         [clusterName] Cluster name
+     * @param  {Object}         [bookendKey]  Bookend key - { cluster, env, executor }
      * @return {Promise}
      */
-    getTeardownCommands(o, clusterName = 'default') {
-        const bookends = this.bookends[clusterName] || this.bookends.default;
+    getTeardownCommands(o, bookendKey = { cluster: 'default' }) {
+        const bookends = selectBookends(this.bookends, bookendKey) || this.bookends.default;
 
         return Promise.all(
             bookends.teardownList.map(m =>
